@@ -1,6 +1,6 @@
 # PSZT-TT.AE.2
 
-[![N|Solid](http://bezpieczenstwo.tele.pw.edu.pl/images/weiti-logo.png)](https://nodesource.com/products/nsolid)
+![WEITI](http://bezpieczenstwo.tele.pw.edu.pl/images/weiti-logo.png)
 
 Contributors:
 - Szymon Grzemski
