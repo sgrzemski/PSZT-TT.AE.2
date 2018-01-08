@@ -3,12 +3,10 @@ from operator import add
 from functools import reduce
 
 
-random.seed(a="PSZT")
-
 nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, dlugosc_indywidua):
+    def __init__(self, target, wielkosc_populacji, dlugosc_indywidua, seed=None):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
@@ -19,6 +17,8 @@ class AlgorytmGenetyczny:
         self.target = target
         self.wielkosc_populacji = wielkosc_populacji
         self.dlugosc_indywidua = dlugosc_indywidua
+
+        random.seed(a=seed)
 
 
     def stworz_indywidual(self, dlugosc):
