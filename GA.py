@@ -3,10 +3,11 @@ from operator import add
 from functools import reduce
 
 
-nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
+nominaly = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, dlugosc_indywidua, seed=None):
+    def __init__(self, target, wielkosc_populacji, dlugosc_indywidua, seed=None,
+                 vanilla=False):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
@@ -22,6 +23,9 @@ class AlgorytmGenetyczny:
 
         # najlepsze rozwiazanie
         self.best = [0, 10000]
+
+        # for test sake
+        self.vanilla = vanilla
 
 
     def stworz_indywidual(self, dlugosc):
@@ -50,13 +54,22 @@ class AlgorytmGenetyczny:
         :param cel: zalozona wartosc celu
         :return: zwraca wartosc bezwgledna sumy iteralu i celu
         '''
+        # TODO: cross validate
+        kara_param = 100
 
         suma = reduce(add, indywidual, 0)
-        loss = abs(cel - suma)
+        loss = cel - suma
 
         liczba_monet = reduce(add, list(map(lambda x: x>0, indywidual)), 0)
 
-        return loss + liczba_monet
+        # kara za nie osiagniecie targetu
+        kara = loss * kara_param
+
+        if self.vanilla:
+            liczba_monet = 0
+            kara_param = 1
+
+        return kara_param * loss**2 + liczba_monet
 
 
     def jakosc(self, populacja, cel):
@@ -100,16 +113,17 @@ class AlgorytmGenetyczny:
             if zostaw_losowo > random.random():
                 rodzice.append(individual)  #dodaj wybrany iteral do
 
+        # mutacja sprawiała ze w rozwiazaniach były warosci z poza nominalow
         #mutacja losowych indywiduów z wybranej listy rodzicow
-        for individual in rodzice:
-            if mutuj > random.random():
-                pos_to_mutate = random.randint(0, len(individual) - 1)
-                # this mutation is not ideal, because it
-                # restricts the range of possible values,
-                # but the function is unaware of the min/max
-                # values used to create the individuals,
-                individual[pos_to_mutate] = random.randint(
-                    min(individual), max(individual))
+        #for individual in rodzice:
+            #if mutuj > random.random():
+                #pos_to_mutate = random.randint(0, len(individual) - 1)
+                ## this mutation is not ideal, because it
+                ## restricts the range of possible values,
+                ## but the function is unaware of the min/max
+                ## values used to create the individuals,
+                #individual[pos_to_mutate] = random.randint(
+                    #min(individual), max(individual))
 
         # crossover parents to create children
         rodzice_dlugosc = len(rodzice)
