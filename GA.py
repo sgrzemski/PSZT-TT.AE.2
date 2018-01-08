@@ -20,6 +20,9 @@ class AlgorytmGenetyczny:
 
         random.seed(a=seed)
 
+        # najlepsze rozwiazanie
+        self.best = [0, 10000]
+
 
     def stworz_indywidual(self, dlugosc):
         '''
@@ -47,8 +50,13 @@ class AlgorytmGenetyczny:
         :param cel: zalozona wartosc celu
         :return: zwraca wartosc bezwgledna sumy iteralu i celu
         '''
+
         suma = reduce(add, indywidual, 0)
-        return abs(cel - suma)
+        loss = abs(cel - suma)
+
+        liczba_monet = reduce(add, list(map(lambda x: x>0, indywidual)), 0)
+
+        return loss + liczba_monet
 
 
     def jakosc(self, populacja, cel):
@@ -120,7 +128,7 @@ class AlgorytmGenetyczny:
         rodzice.extend(dzieci) #Dodaj dzieci do zbioru rodzicow
         return rodzice
 
-    def run(self, iteracje):
+    def run(self, iteracje, verbose=False):
         '''
         Rozwiązuje zadanie dla podanych parametrow
         :param populacja: zsprawdzana populacja
@@ -133,14 +141,33 @@ class AlgorytmGenetyczny:
         p = self.stworz_populacje(self.wielkosc_populacji, self.dlugosc_indywidua)
 
         # zapisz jakosc populacji w liscie historii
-        fitness_history = [self.jakosc(p, self.target)]
+        self.fitness_history = [self.jakosc(p, self.target)]
 
         for i in range(iteracje):
             p = self.ewoluuj(p, self.target)
-            fitness_history.append(self.jakosc(p, self.target))
 
-        return fitness_history
+            # sprawdz czy wygenerowano lepsze rozwiazanie, jak tak to zapamietaj
+            best_p = self.best_from_population(p)
+            if best_p[1] < self.best[1]:
+                # zapamietaj najlepsze rozwiazanie
+                self.best = best_p
 
+            # sprawdz czy sie polepsza
+            average_loss = self.jakosc(p, self.target)
+            self.fitness_history.append(average_loss)
+
+            if verbose:
+                print("iteracja: {iteracja}   average loss:{loss}"
+                      .format(iteracja=i, loss=average_loss))
+
+
+        return self.fitness_history
+
+
+    def best_from_population(self, population):
+        population_loss = [self.fitness(x, self.target) for x in population]
+        best_index = population_loss.index(min(population_loss))
+        return (population[best_index], population_loss[best_index])
 
 
 if __name__ == '__main__':
@@ -148,19 +175,3 @@ if __name__ == '__main__':
     alg = AlgorytmGenetyczny(target=700, wielkosc_populacji=100, dlugosc_indywidua=10)
     history = alg.run(100)
     print(history)
-
-    # ===============================
-    # TEST ALGORYTMU
-    # ===============================
-    #p = stworz_populacje(p_count, i_length)  # tworzy populacje 100 iteralow, kazdy po 5 liczb od 0 do 100
-    #fitness_history = [jakosc(p, target)]  # zapisz jakosc populacji w liscie historii
-#
-    #for i in range(100):
-        #p = ewoluuj(p, target)
-        #fitness_history.append(jakosc(p, target))
-#
-    #for datum in fitness_history:
-        #print(datum)
-
-    # reszta = int(input("Wprowadz reszte do wydania:\n"))
-    # print("Wprowadzona reszta to: {}".format(reszta))
