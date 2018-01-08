@@ -55,7 +55,7 @@ class AlgorytmGenetyczny:
         :return: zwraca wartosc bezwgledna sumy iteralu i celu
         '''
         # TODO: cross validate
-        kara_param = 100
+        kara_param = 1000
 
         suma = reduce(add, indywidual, 0)
         loss = cel - suma
@@ -113,17 +113,11 @@ class AlgorytmGenetyczny:
             if zostaw_losowo > random.random():
                 rodzice.append(individual)  #dodaj wybrany iteral do
 
-        # mutacja sprawiała ze w rozwiazaniach były warosci z poza nominalow
         #mutacja losowych indywiduów z wybranej listy rodzicow
-        #for individual in rodzice:
-            #if mutuj > random.random():
-                #pos_to_mutate = random.randint(0, len(individual) - 1)
-                ## this mutation is not ideal, because it
-                ## restricts the range of possible values,
-                ## but the function is unaware of the min/max
-                ## values used to create the individuals,
-                #individual[pos_to_mutate] = random.randint(
-                    #min(individual), max(individual))
+        for individual in rodzice:
+            if mutuj > random.random():
+                pos_to_mutate = random.randint(0, len(individual) - 1)
+                individual[pos_to_mutate] = random.choice(nominaly)
 
         # crossover parents to create children
         rodzice_dlugosc = len(rodzice)
