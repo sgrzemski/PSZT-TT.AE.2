@@ -31,7 +31,7 @@ class AlgorytmGenetyczny:
     def wylosuj_ilosc_sztuk_nominalu(self, poz):
         a = math.floor(self.target/nominaly[poz])
         if a != 0:
-            a = random.randint(1, a)
+            a = random.randint(0, a)
         return a
 
 
@@ -65,7 +65,8 @@ class AlgorytmGenetyczny:
         :return: zwraca wartosc bezwgledna sumy iteralu i celu
         '''
         # TODO: cross validate
-        kara_param = 1000
+        kara_param = 100
+        kara_param2 = 1.5
 
         suma =  reduce(add, np.multiply(indywidual,nominaly))
 
@@ -85,7 +86,7 @@ class AlgorytmGenetyczny:
             liczba_monet = 0
             kara_param = 1000
 
-        return kara_param * loss**2 + liczba_monet
+        return kara_param * loss**2 + kara_param2*liczba_monet
 
 
     def jakosc(self, populacja, cel):

@@ -1,4 +1,4 @@
-from GA import AlgorytmGenetyczny
+from GA import AlgorytmGenetyczny, nominaly, np
 from operator import add
 from functools import reduce
 
@@ -13,14 +13,15 @@ def main():
     seed = None
 
     # f-cja fitnes deluxe - nowe pomysly
-    alg = AlgorytmGenetyczny(target=12, wielkosc_populacji=1000, seed=seed)
+    target=25
+    alg = AlgorytmGenetyczny(target, wielkosc_populacji=500, seed=seed)
 
-    alg.run(iteracje=15, verbose=True)
-
-    print("\n New:")
-    print("Rozwiazanie: \n {}".format(alg.best[0]))
-    print("Suma monet: {}".format(sum(alg.best[0])))
-    print("Liczba monet: {}".format(count_not_zero_in_list(alg.best[0])))
+    alg.run(iteracje=100, verbose=True)
+    print("\nNominaly", nominaly)
+    print("\nCel: ", target)
+    print("Rozwiazanie:  {}".format(alg.best[0]))
+    print("Liczba monet: {}".format(sum(alg.best[0])))
+    print("Suma monet: {}".format(reduce(add, np.multiply(alg.best[0],nominaly))))
     print("Loss: {}".format(alg.best[1]))
 
     ## możliwie najprostrza f-cja fitness
