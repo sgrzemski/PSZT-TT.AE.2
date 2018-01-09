@@ -28,6 +28,14 @@ class AlgorytmGenetyczny:
         self.vanilla = vanilla
 
 
+    def wylosuj_ilosc_sztuk_nominalu(self, poz):
+        a = math.floor(self.target/nominaly[poz])
+        if a != 0:
+            a = random.randint(1, a)
+        return a
+
+
+
     def stworz_indywidual(self):
         '''
         Funkcja do generowania indywiduow.
@@ -36,13 +44,7 @@ class AlgorytmGenetyczny:
         '''
         list = []
         for x in range(self.dlugosc_indywidua) :
-            a = math.floor(self.target/nominaly[x])
-            if a == 0:
-                list.append(0)
-            else:
-                list.append(random.randint(1, a))
-
-        #print(list)
+            list.append(self.wylosuj_ilosc_sztuk_nominalu(x))
         return list
 
 
@@ -81,7 +83,7 @@ class AlgorytmGenetyczny:
 
         if self.vanilla:
             liczba_monet = 0
-            kara_param = 1
+            kara_param = 1000
 
         return kara_param * loss**2 + liczba_monet
 
@@ -131,7 +133,7 @@ class AlgorytmGenetyczny:
         for individual in rodzice:
             if mutuj > random.random():
                 pos_to_mutate = random.randint(0, len(individual) - 1)
-                individual[pos_to_mutate] = random.choice(nominaly)
+                individual[pos_to_mutate] = self.wylosuj_ilosc_sztuk_nominalu(pos_to_mutate)
 
         # crossover parents to create children
         rodzice_dlugosc = len(rodzice)

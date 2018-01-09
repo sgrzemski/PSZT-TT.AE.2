@@ -13,9 +13,9 @@ def main():
     seed = None
 
     # f-cja fitnes deluxe - nowe pomysly
-    alg = AlgorytmGenetyczny(target=52, wielkosc_populacji=10, seed=seed)
+    alg = AlgorytmGenetyczny(target=12, wielkosc_populacji=1000, seed=seed)
 
-    alg.run(iteracje=10, verbose=False)
+    alg.run(iteracje=15, verbose=True)
 
     print("\n New:")
     print("Rozwiazanie: \n {}".format(alg.best[0]))
