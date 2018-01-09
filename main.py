@@ -13,10 +13,9 @@ def main():
     seed = None
 
     # f-cja fitnes deluxe - nowe pomysly
-    alg = AlgorytmGenetyczny(target=700, wielkosc_populacji=100,
-                             dlugosc_indywidua=10, seed=seed)
+    alg = AlgorytmGenetyczny(target=52, wielkosc_populacji=10, seed=seed)
 
-    alg.run(100, verbose=False)
+    alg.run(iteracje=10, verbose=False)
 
     print("\n New:")
     print("Rozwiazanie: \n {}".format(alg.best[0]))
@@ -42,7 +41,7 @@ def main():
     plt.xlabel('Iteration')
     plt.ylabel('Loss')
 
-    #plt.show()
+    plt.show()
 
 if __name__ == '__main__':
     main()

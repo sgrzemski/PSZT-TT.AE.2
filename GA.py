@@ -1,13 +1,13 @@
 import random
 from operator import add
 from functools import reduce
+import math
+import numpy as np
 
-
-nominaly = [0, 1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
+nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, dlugosc_indywidua, seed=None,
-                 vanilla=False):
+    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
@@ -17,7 +17,7 @@ class AlgorytmGenetyczny:
 
         self.target = target
         self.wielkosc_populacji = wielkosc_populacji
-        self.dlugosc_indywidua = dlugosc_indywidua
+        self.dlugosc_indywidua = len(nominaly)
 
         random.seed(a=seed)
 
@@ -28,23 +28,31 @@ class AlgorytmGenetyczny:
         self.vanilla = vanilla
 
 
-    def stworz_indywidual(self, dlugosc):
+    def stworz_indywidual(self):
         '''
         Funkcja do generowania indywiduow.
         :param dlugosc: okresla ilosc elementow w indywiduale
         :return: zwraca iteral zawierajacy nominaly PLN
         '''
-        return [random.choice(nominaly) for x in range(dlugosc)]
+        list = []
+        for x in range(self.dlugosc_indywidua) :
+            a = math.floor(self.target/nominaly[x])
+            if a == 0:
+                list.append(0)
+            else:
+                list.append(random.randint(1, a))
+
+        #print(list)
+        return list
 
 
-    def stworz_populacje(self, ilesztuk, dlugosc):
+    def stworz_populacje(self, ilesztuk):
         '''
         Funkcja do tworzenia populacji z indywiduow.
         :param ilesztuk: ilosc generowanych indywiduow w populacji
-        :param dlugosc: dlugosc pojedynczego indywiduum
         :return: zwraca populacje zlozana z iteralow
         '''
-        return [self.stworz_indywidual(dlugosc) for x in range(ilesztuk)]
+        return [self.stworz_indywidual() for x in range(ilesztuk)]
 
 
     def fitness(self, indywidual, cel):
@@ -57,10 +65,16 @@ class AlgorytmGenetyczny:
         # TODO: cross validate
         kara_param = 1000
 
-        suma = reduce(add, indywidual, 0)
-        loss = cel - suma
+        suma =  reduce(add, np.multiply(indywidual,nominaly))
 
-        liczba_monet = reduce(add, list(map(lambda x: x>0, indywidual)), 0)
+        loss =abs(cel - suma)
+
+        liczba_monet = reduce(add, indywidual)
+
+        #print(nominaly)
+        #print(indywidual)
+        #print("Suma " ,suma)
+        #print("Liczba monet" ,liczba_monet)
 
         # kara za nie osiagniecie targetu
         kara = loss * kara_param
@@ -146,7 +160,7 @@ class AlgorytmGenetyczny:
 
 
         # tworzy populacje 100 iteralow, kazdy po 5 liczb od 0 do 100
-        p = self.stworz_populacje(self.wielkosc_populacji, self.dlugosc_indywidua)
+        p = self.stworz_populacje(self.wielkosc_populacji)
 
         # zapisz jakosc populacji w liscie historii
         self.fitness_history = [self.jakosc(p, self.target)]
