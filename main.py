@@ -4,7 +4,6 @@ from functools import reduce
 
 import matplotlib.pyplot as plt
 
-
 def count_not_zero_in_list(l):
        return reduce(add, list(map(lambda x: x>0, l)), 0)
 
@@ -17,12 +16,14 @@ def main():
     alg = AlgorytmGenetyczny(target, wielkosc_populacji=500, seed=seed)
 
     alg.run(iteracje=100, verbose=True)
-    print("\nNominaly", nominaly)
-    print("\nCel: ", target)
-    print("Rozwiazanie:  {}".format(alg.best[0]))
-    print("Liczba monet: {}".format(sum(alg.best[0])))
-    print("Suma monet: {}".format(reduce(add, np.multiply(alg.best[0],nominaly))))
-    print("Loss: {}".format(alg.best[1]))
+    file = open("wyniki.log", mode='a+')
+    file.write("\nNominaly {}".format(nominaly))
+    file.write("\nCel: {}\n".format(target))
+    file.write("Rozwiazanie:  {}\n".format(alg.best[0]))
+    file.write("Liczba monet: {}\n".format(sum(alg.best[0])))
+    file.write("Suma monet: {}\n".format(reduce(add, np.multiply(alg.best[0],nominaly))))
+    file.write("Loss: {}\n".format(alg.best[1]))
+    file.close()
 
     ## możliwie najprostrza f-cja fitness
     #alg_vanilla = AlgorytmGenetyczny(target=700, wielkosc_populacji=100,

@@ -3,6 +3,7 @@ from operator import add
 from functools import reduce
 import math
 import numpy as np
+import datetime
 
 nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
@@ -161,6 +162,9 @@ class AlgorytmGenetyczny:
         :return: zwracana jest lista z historia wartosci f-cji dopasowania
         '''
 
+        file = open("wyniki.log", mode='a+')
+        file.write("Proba %s.\n" %
+                   (datetime.datetime.now()))
 
         # tworzy populacje 100 iteralow, kazdy po 5 liczb od 0 do 100
         p = self.stworz_populacje(self.wielkosc_populacji)
@@ -182,10 +186,10 @@ class AlgorytmGenetyczny:
             self.fitness_history.append(average_loss)
 
             if verbose:
-                print("iteracja: {iteracja}   average loss:{loss}"
+                file.write("iteracja: {iteracja}   average loss:{loss}\n"
                       .format(iteracja=i, loss=average_loss))
 
-
+        file.close()
         return self.fitness_history
 
 
