@@ -1,7 +1,7 @@
 from GA import AlgorytmGenetyczny, nominaly, np
 from operator import add
 from functools import reduce
-
+import math
 import matplotlib.pyplot as plt
 
 def count_not_zero_in_list(l):
@@ -10,12 +10,27 @@ def count_not_zero_in_list(l):
 def main():
     #seed = "PSZT"
     seed = None
-
+    wielkosc_populacji=100
+    zostaw= 0.2
+    zostaw_losowo = 0.05
+    mutuj = 0.01
+    metoda_crossowania = 2 #1 - pół na pół, 2 na przemiennie
+    kara_param = 100
+    kara_param2 = 1.5
+    vanilla=False
+    iteracje = 20
+    verbose = True
     # f-cja fitnes deluxe - nowe pomysly
-    target=25
-    alg = AlgorytmGenetyczny(target, wielkosc_populacji=500, seed=seed)
+    target=200
 
-    alg.run(iteracje=100, verbose=True)
+
+    alg = AlgorytmGenetyczny(target, wielkosc_populacji, seed, vanilla, zostaw,
+                             zostaw_losowo, mutuj, metoda_crossowania,
+                             kara_param, kara_param2)
+    alg.run(iteracje, verbose)
+
+
+
     file = open("wyniki.log", mode='a+')
     file.write("\nNominaly {}".format(nominaly))
     file.write("\nCel: {}\n".format(target))

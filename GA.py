@@ -8,7 +8,7 @@ import datetime
 nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False):
+    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False, zostaw=0.2, zostaw_losowo=0.05, mutuj = 0.01, metoda_crossowania = 1, kara_param =1000,kara_param2 = 1.5 ):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
@@ -19,7 +19,12 @@ class AlgorytmGenetyczny:
         self.target = target
         self.wielkosc_populacji = wielkosc_populacji
         self.dlugosc_indywidua = len(nominaly)
-
+        self.zostaw = zostaw
+        self.zostaw_losowo = zostaw_losowo
+        self.mutuj = mutuj
+        self.metoda_crossowania = metoda_crossowania
+        self.kara_param = kara_param
+        self.kara_param2 = kara_param2
         random.seed(a=seed)
 
         # najlepsze rozwiazanie
@@ -66,8 +71,7 @@ class AlgorytmGenetyczny:
         :return: zwraca wartosc bezwgledna sumy iteralu i celu
         '''
         # TODO: cross validate
-        kara_param = 100
-        kara_param2 = 1.5
+
 
         suma =  reduce(add, np.multiply(indywidual,nominaly))
 
@@ -81,13 +85,13 @@ class AlgorytmGenetyczny:
         #print("Liczba monet" ,liczba_monet)
 
         # kara za nie osiagniecie targetu
-        kara = loss * kara_param
+        kara = loss * self.kara_param
 
         if self.vanilla:
             liczba_monet = 0
-            kara_param = 1000
+            self.kara_param = 1000
 
-        return kara_param * loss**2 + kara_param2*liczba_monet
+        return self.kara_param * loss**2 + self.kara_param2*liczba_monet
 
 
     def jakosc(self, populacja, cel):
@@ -101,7 +105,7 @@ class AlgorytmGenetyczny:
         return summed / (len(populacja) * 1.0)
 
 
-    def ewoluuj(self, populacja, cel, zostaw=0.2, zostaw_losowo=0.05, mutuj=0.01):
+    def ewoluuj(self, populacja, cel):
         '''
         Funkcja ewoluujaca populacje aby uzyskac najlepszy wynik.
         :param populacja: ewoluowana populacja
@@ -120,7 +124,7 @@ class AlgorytmGenetyczny:
 
         # wd wyznacza ilosc indywiduow, ktore przetrwaja (dlugosc listy graded razy
         # procent pozostalych)
-        zostaw_dlugosc = int(len(graded) * zostaw)
+        zostaw_dlugosc = int(len(graded) * self.zostaw)
 
         #wyznacza z listy jakosci najlepsze iteraly
         rodzice = graded[:zostaw_dlugosc]
@@ -128,12 +132,12 @@ class AlgorytmGenetyczny:
         #losowo wybierz inne indywidyaly zeby zapewnic rownosc genetyczna
         #z listy odrzuconych wybierz iteral
         for individual in graded[zostaw_dlugosc:]:
-            if zostaw_losowo > random.random():
+            if self.zostaw_losowo > random.random():
                 rodzice.append(individual)  #dodaj wybrany iteral do
 
         #mutacja losowych indywiduów z wybranej listy rodzicow
         for individual in rodzice:
-            if mutuj > random.random():
+            if self.mutuj > random.random():
                 pos_to_mutate = random.randint(0, len(individual) - 1)
                 individual[pos_to_mutate] = self.wylosuj_ilosc_sztuk_nominalu(pos_to_mutate)
 
@@ -147,9 +151,20 @@ class AlgorytmGenetyczny:
             if meski != damski:
                 meski = rodzice[meski]
                 damski = rodzice[damski]
-                polowa = int(len(meski) / 2)
-                dziecko = meski[:polowa] + damski[polowa:]
-                dzieci.append(dziecko)
+                if(self.metoda_crossowania == 1):
+                    polowa = int(len(meski) / 2)
+                    dziecko = meski[:polowa] + damski[polowa:]
+                    dzieci.append(dziecko)
+                else:
+                    dziecko = []
+                    print('meski  ',meski)
+                    print('damski ', damski)
+                    for x in range(0,self.dlugosc_indywidua,2) :
+                        dziecko.append(meski[x])
+                        if(self.dlugosc_indywidua > x+1):
+                            dziecko.append(damski[x+1])
+                    print(dziecko)
+                    dzieci.append(dziecko)
 
         rodzice.extend(dzieci) #Dodaj dzieci do zbioru rodzicow
         return rodzice
