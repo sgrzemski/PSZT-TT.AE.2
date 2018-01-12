@@ -8,14 +8,15 @@ import datetime
 nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False, zostaw=0.2, zostaw_losowo=0.05, mutuj = 0.01, metoda_crossowania = 1, kara_param =1000,kara_param2 = 1.5 ):
+    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False,
+    zostaw=0.2, zostaw_losowo=0.05, mutuj = 0.01, metoda_crossowania = 1,
+                 kara_param =1000, kara_param2 = 1.5, verbose=False):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
         :param wielkosc_populacji: wielkość generowanej co iteracje populacji
         :param dlugosc_indywidua: maksymalna liczba wydawanych monet
         '''
-
         self.target = target
         self.wielkosc_populacji = wielkosc_populacji
         self.dlugosc_indywidua = len(nominaly)
@@ -32,6 +33,7 @@ class AlgorytmGenetyczny:
 
         # for test sake
         self.vanilla = vanilla
+        self.verbose = verbose
 
 
     def wylosuj_ilosc_sztuk_nominalu(self, poz):
@@ -157,14 +159,15 @@ class AlgorytmGenetyczny:
                     dzieci.append(dziecko)
                 else:
                     dziecko = []
-                    print('meski  ',meski)
-                    print('damski ', damski)
                     for x in range(0,self.dlugosc_indywidua,2) :
                         dziecko.append(meski[x])
                         if(self.dlugosc_indywidua > x+1):
                             dziecko.append(damski[x+1])
-                    print(dziecko)
                     dzieci.append(dziecko)
+                    if self.verbose:
+                        print('meski  ',meski)
+                        print('damski ', damski)
+                        print(dziecko)
 
         rodzice.extend(dzieci) #Dodaj dzieci do zbioru rodzicow
         return rodzice
