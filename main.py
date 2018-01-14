@@ -13,7 +13,7 @@ def count_not_zero_in_list(l):
        return reduce(add, list(map(lambda x: x>0, l)), 0)
 
 
-def test_GA(target, fn, iterations=10, verbose=False):
+def test_algorithm(target, algorythm, iterations=10, verbose=False):
     ''' Z próby 'iterations wyznacza dokładność oraz średni czas obliczeń
     TODO: params, return
     '''
@@ -21,7 +21,7 @@ def test_GA(target, fn, iterations=10, verbose=False):
     results = []
     for i in range(iterations):
         start = time.clock()
-        results.append(fn() == target)
+        results.append(algorythm() == target)
         end = time.clock()
         times.append(end-start)
 
@@ -35,8 +35,8 @@ def test_GA(target, fn, iterations=10, verbose=False):
     return accuracy, time
 
 
-def compare_algorithms(target, alg, iterations=10, verbose=True):
-    ''' Porównuje czasowo algorytmy
+def time_algorithms(target, algorythms, iterations=10, verbose=True):
+    '''Czasowo poróbuje podane algorytmy
     TODO: opis f-cji i komentarze
     '''
     coins = [1,2,5,10,20,50,100,200,500]
@@ -80,11 +80,13 @@ def main():
 
     #alg.run(iteracje, verbose=False)
 
-
     test_GA(target, lambda: alg.run(iteracje), iterations=20, verbose=True)
     #compare_algorithms(target, lambda: alg.run(iteracje), 10)
 
-    
+
+
+
+
     #file = open("wyniki.log", mode='a+')
     #file.write("\nNominaly {}".format(nominaly))
     #file.write("\nCel: {}\n".format(target))

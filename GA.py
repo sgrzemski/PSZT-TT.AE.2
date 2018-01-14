@@ -4,32 +4,43 @@ from functools import reduce
 import math
 import numpy as np
 import datetime
+import copy
 
-nominaly = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Nominaly PLN, tylko calkowite
+#self.coins = [1, 2, 5, 10, 20, 50, 100, 200, 500] #Self.Coins PLN, tylko calkowite
 
 class AlgorytmGenetyczny:
-    def __init__(self, target, wielkosc_populacji, seed=None, vanilla=False,
-    zostaw=0.2, zostaw_losowo=0.05, mutuj = 0.01, metoda_crossowania = 1,
-                 kara_param =1000, kara_param2 = 1.5, verbose=False):
+    def __init__(self, target, coins, wielkosc_populacji=100, seed=None, vanilla=False,
+    zostaw=0.2, zostaw_losowo=0.05, mutuj=0.01, metoda_crossowania=1,
+                 kara_param=1000, kara_param2=1.5, elite_num=2, verbose=False):
         '''
         Inicjacja algorytmu
         :param target: kwota do wydania
         :param wielkosc_populacji: wielkość generowanej co iteracje populacji
         :param dlugosc_indywidua: maksymalna liczba wydawanych monet
         '''
+        random.seed(a=seed)
+
         self.target = target
+        self.coins = coins
         self.wielkosc_populacji = wielkosc_populacji
-        self.dlugosc_indywidua = len(nominaly)
+        self.dlugosc_indywidua = len(self.coins)
         self.zostaw = zostaw
         self.zostaw_losowo = zostaw_losowo
         self.mutuj = mutuj
         self.metoda_crossowania = metoda_crossowania
         self.kara_param = kara_param
         self.kara_param2 = kara_param2
-        random.seed(a=seed)
 
-        # najlepsze rozwiazanie
-        self.best = [0, 10000]
+        # init elite
+        self.elite_num = elite_num
+        self.elite = [self.stworz_indywidual() for e in range(self.elite_num)]
+
+        # init population
+        self.population = self.stworz_populacje(self.wielkosc_populacji)
+        self.population.extend(self.elite)
+
+        self.best = [0, 10000]  # best result
+        self.fitness_history = []  # log of mean population fitness
 
         # for test sake
         self.vanilla = vanilla
@@ -37,18 +48,17 @@ class AlgorytmGenetyczny:
 
 
     def wylosuj_ilosc_sztuk_nominalu(self, poz):
-        a = math.floor(self.target/nominaly[poz])
+        a = math.floor(self.target/self.coins[poz])
         if a != 0:
             a = random.randint(0, a)
         return a
-
 
 
     def stworz_indywidual(self):
         '''
         Funkcja do generowania indywiduow.
         :param dlugosc: okresla ilosc elementow w indywiduale
-        :return: zwraca iteral zawierajacy nominaly PLN
+        :return: zwraca iteral zawierajacy self.coins PLN
         '''
         list = []
         for x in range(self.dlugosc_indywidua) :
@@ -75,13 +85,13 @@ class AlgorytmGenetyczny:
         # TODO: cross validate
 
 
-        suma =  reduce(add, np.multiply(indywidual,nominaly))
+        suma =  reduce(add, np.multiply(indywidual,self.coins))
 
         loss =abs(cel - suma)
 
         liczba_monet = reduce(add, indywidual)
 
-        #print(nominaly)
+        #print(self.coins)
         #print(indywidual)
         #print("Suma " ,suma)
         #print("Liczba monet" ,liczba_monet)
@@ -107,25 +117,25 @@ class AlgorytmGenetyczny:
         return summed / (len(populacja) * 1.0)
 
 
-    def ewoluuj(self, populacja, cel):
-        '''
-        Funkcja ewoluujaca populacje aby uzyskac najlepszy wynik.
-        :param populacja: ewoluowana populacja
-        :param cel: zalozona wartosc celu
-        :param zostaw: procent osobnikow, ktore przetrwaja
-        :param zostaw_losowo: procent losowo wybieranych osobnikow
-        :param mutuj: procent mutowanych osobnikow
-        :return:
-        '''
-        #tworzy liste jakosci dla kazdego indywiduum
-        #na przyklad (180, [80, 75, 8, 85, 57])
-        graded = [(self.fitness(x, cel), x) for x in populacja]
+    def annihilate_popultaion(self):
+        self.population = self.stworz_populacje(self.wielkosc_populacji)
 
-        #posortowana lista jakosci z usunietym fitnesem
+
+    def selection(self, population):
+        '''Wybór osobników z populacji do reprodukcji
+
+        Selekcja wybiera 20% najlepszych punktów oraz z pewnym
+        prawdopodobieństem brane są punkty z pozostałej części populacji
+        '''
+
+        # tworzy liste jakosci dla kazdego indywiduum
+        # na przyklad (180, [80, 75, 8, 85, 57])
+        graded = [(self.fitness(x, self.target), x) for x in population]
+
+        # posortowana lista jakosci z usunietym fitnesem
         graded = [x[1] for x in sorted(graded)]
 
-        # wd wyznacza ilosc indywiduow, ktore przetrwaja (dlugosc listy graded razy
-        # procent pozostalych)
+        # ilosc indywiduow, ktore przetrwaja
         zostaw_dlugosc = int(len(graded) * self.zostaw)
 
         #wyznacza z listy jakosci najlepsze iteraly
@@ -135,24 +145,36 @@ class AlgorytmGenetyczny:
         #z listy odrzuconych wybierz iteral
         for individual in graded[zostaw_dlugosc:]:
             if self.zostaw_losowo > random.random():
-                rodzice.append(individual)  #dodaj wybrany iteral do
+                rodzice.append(individual)
 
-        #mutacja losowych indywiduów z wybranej listy rodzicow
-        for individual in rodzice:
+        return rodzice
+
+
+    def mutation(self, population):
+        '''Mutacja losowych osobników z populacji'''
+        for individual in population:
             if self.mutuj > random.random():
                 pos_to_mutate = random.randint(0, len(individual) - 1)
                 individual[pos_to_mutate] = self.wylosuj_ilosc_sztuk_nominalu(pos_to_mutate)
 
+        return population
+
+
+    def crossover(self, mating_pool):
+        ''' Krzyżowanie osobników wybranych do reprodukcji
+        '''
+
         # crossover parents to create children
-        rodzice_dlugosc = len(rodzice)
-        rzadana_dlugosc = len(populacja) - rodzice_dlugosc
+        rodzice_dlugosc = len(mating_pool)
+        rzadana_dlugosc = self.wielkosc_populacji  - rodzice_dlugosc
+
         dzieci = []
         while len(dzieci) < rzadana_dlugosc:
             meski = random.randint(0, rodzice_dlugosc - 1)
             damski = random.randint(0, rodzice_dlugosc - 1)
             if meski != damski:
-                meski = rodzice[meski]
-                damski = rodzice[damski]
+                meski = mating_pool[meski]
+                damski = mating_pool[damski]
                 if(self.metoda_crossowania == 1):
                     polowa = int(len(meski) / 2)
                     dziecko = meski[:polowa] + damski[polowa:]
@@ -169,8 +191,45 @@ class AlgorytmGenetyczny:
                         print('damski ', damski)
                         print(dziecko)
 
-        rodzice.extend(dzieci) #Dodaj dzieci do zbioru rodzicow
-        return rodzice
+        mating_pool.extend(dzieci)
+        return mating_pool
+
+
+    def adopt_elite(self, population):
+        local_population = list(population)
+        for i in range(self.elite_num):
+            population_loss = [self.fitness(x, self.target) for x in
+                               local_population]
+
+            best_index = population_loss.index(min(population_loss))
+            if (self.fitness(self.elite[i], self.target) >
+                population_loss[best_index] and local_population[best_index] not in self.elite):
+
+                self.elite[i] = copy.deepcopy(local_population[best_index])
+                del local_population[best_index]
+
+
+    def evolve(self, populacja, cel):
+        '''
+        Funkcja ewoluujaca populacje aby uzyskac najlepszy wynik.
+        :param populacja: ewoluowana populacja
+        :param cel: zalozona wartosc celu
+        :param zostaw: procent osobnikow, ktore przetrwaja
+        :param zostaw_losowo: procent losowo wybieranych osobnikow
+        :param mutuj: procent mutowanych osobnikow
+        :return:
+        '''
+
+        mating_pool = self.selection(populacja)
+        new_population = self.crossover(mating_pool)
+        new_population = self.mutation(new_population)
+
+        if self.elite_num != 0:
+            self.adopt_elite(new_population)
+            new_population.extend(self.elite)
+
+        return new_population
+
 
     def run(self, iteracje, verbose=False):
         '''
@@ -184,31 +243,27 @@ class AlgorytmGenetyczny:
         file.write("Proba %s.\n" %
                    (datetime.datetime.now()))
 
-        # tworzy populacje 100 iteralow, kazdy po 5 liczb od 0 do 100
-        p = self.stworz_populacje(self.wielkosc_populacji)
-
-        # zapisz jakosc populacji w liscie historii
-        self.fitness_history = [self.jakosc(p, self.target)]
 
         for i in range(iteracje):
-            p = self.ewoluuj(p, self.target)
-
-            # sprawdz czy wygenerowano lepsze rozwiazanie, jak tak to zapamietaj
-            best_p = self.best_from_population(p)
-            if best_p[1] < self.best[1]:
-                # zapamietaj najlepsze rozwiazanie
-                self.best = best_p
+            self.population = self.evolve(self.population, self.target)
 
             # sprawdz czy sie polepsza
-            average_loss = self.jakosc(p, self.target)
+            average_loss = self.jakosc(self.population, self.target)
             self.fitness_history.append(average_loss)
 
-            if verbose:
-                file.write("iteracja: {iteracja}   average loss:{loss}\n"
-                      .format(iteracja=i, loss=average_loss))
+            # sprawdz czy wygenerowano lepsze rozwiazanie, jak tak to zapamietaj
+            best_p = self.best_from_population(self.population)
+            if best_p[1] < self.best[1]:
+                # zapamietaj najlepsze rozwiazanie
+                self.best = copy.deepcopy(best_p)
 
+
+            if verbose:
+                print("iteracja: {iteracja}   average loss:{loss}\n"
+                      .format(iteracja=i, loss=average_loss))
         file.close()
-        return self.fitness_history
+
+        return self.best
 
 
     def best_from_population(self, population):
