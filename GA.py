@@ -42,6 +42,8 @@ class AlgorytmGenetyczny:
         self.fitness_history = []  # log of mean population fitness
         self.best_history = []  # log of lowest loss value
 
+
+        self.worse = None
         self.best = None
         # for test sake
         self.vanilla = vanilla
@@ -123,6 +125,7 @@ class AlgorytmGenetyczny:
         self.best_history = []
         self.fitness_history = []
         self.best = None
+        self.worse = None
         self.elite = [self.stworz_indywidual() for e in range(self.elite_num)]
 
 
@@ -280,6 +283,12 @@ class AlgorytmGenetyczny:
     def best_from_population(self, population):
         population_loss = [self.fitness(x, self.target) for x in population]
         best_index = population_loss.index(min(population_loss))
+        return (population[best_index], population_loss[best_index])
+
+
+    def worse_from_population(self, population):
+        population_loss = [self.fitness(x, self.target) for x in population]
+        best_index = population_loss.index(max(population_loss))
         return (population[best_index], population_loss[best_index])
 
 
