@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[23]:
+# In[1]:
 
 # nessesary import
 from GA import AlgorytmGenetyczny
@@ -17,7 +17,7 @@ import time
 #get_ipython().magic('autoreload 2')
 
 
-# In[25]:
+# In[2]:
 
 
 def test_algorithm(target, algorythm, iterations=10, verbose=False):
@@ -42,7 +42,7 @@ def test_algorithm(target, algorythm, iterations=10, verbose=False):
     return accuracy, mean_time
 
 
-# In[26]:
+# In[3]:
 
 
 params = dict()
@@ -71,7 +71,7 @@ target = 200
 
 
 
-# In[11]:
+# In[5]:
 
 # sanity check - nasz algorytm powinien działać dla powyżysz/poniższych ustawień
 
@@ -206,17 +206,26 @@ plt.show()
 # małą liczbą iteracji.
 # 
 
-# In[40]:
+# In[80]:
 
+import random
 target=437
 coins=[1,2,5,10,20,50,100,200,500]
+seed="PSZT0"
 
-
+params['elite_num'] = 2
 alg = AlgorytmGenetyczny(target, coins, **params, **loss_params, seed=seed,
                          verbose=False)
 
-iterations = 500
-parameters = [50, 100, 200, 500]
+
+alg_iterations = 750
+iterations = 10
+
+parameters = [50,100,300,600]
+
+data = dict()
+history = dict()
+mean_loss = dict()
 
 
 print("==========settings=============")
@@ -225,14 +234,103 @@ print("iterations: {}".format(iterations))
 print()
 for param in parameters:
     alg.kara_param = param
-    result = alg.run(iterations)
+    data[param] = []
+    
+    for i in range(iterations):
+        # change seed for random generator
+        GA.random.seed(a="PSZT{}".format(i))
+        random.seed(a="PSZT{}".format(i))
 
-    print("+-+-+-+-+-parameters+-+-+-+-+-+")
-    print("kara_param: ", alg.kara_param)
-    print("----------results-------------")
-    print("sum: ", np.sum(np.multiply(result[0], coins)))
-    print("coin num: ", np.sum(result[0]))
-    print("loss: ", result[1])
-    print()
+        result = alg.run(alg_iterations)
+        data[param].append(alg.best[1])
+        history[(param, i)] = alg.best_history
+        mean_loss[(param, i)] = alg.fitness_history
 
+        print("ITERATION {}".format(i))
+        print("+-+-+-+-+-parameters+-+-+-+-+-+")
+        print("kara_param: ", alg.kara_param)
+        print("----------results-------------")
+        print("sum: ", np.sum(np.multiply(result[0], coins)))
+        print("coin num: ", np.sum(result[0]))
+        print("loss: ", result[1])
+        print()
+        alg.annihilate_popultaion()
+
+# poka wykres
+plt.title('elo')
+for i in range(iterations):
+    plt.plot(history[50,i])
+    plt.plot(mean_loss[(50, i)])
+plt.xlabel('Iteration')
+plt.ylabel('Loss')
+plt.ylim(0, 750)
+
+plt.figure(figsize=(10,7))
+plt.show()
+
+
+# # Przebiegi najmniejszej wartości funkcji celu w zależności od 'param_kara'
+# 
+
+# In[75]:
+
+
+f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col', sharey='row',figsize=(15,10))
+ax1.set_title('param=50')
+ax2.set_title('param=100')
+ax3.set_title('param=300')
+ax4.set_title('param=600')
+
+ax1.set_ylim([0, 750])
+ax2.set_ylim([0, 750])
+ax3.set_ylim([0, 750])
+ax4.set_ylim([0, 750])
+
+for i in range(iterations):
+    ax1.plot(history[50,i])
+    ax2.plot(history[100,i])
+    ax3.plot(history[300,i])
+    ax4.plot(history[600,i])
+
+ax1.ploy()
+plt.show()
+
+
+# In[52]:
+
+# ucinam pierwsze  duże wartości bo bedą przydko wyglądały na wykresie
+x1 = np.array(data[50])
+x1 = x1[x1<700]
+x2 = np.array(data[100])
+x2 = x2[x2<700]
+x3 = np.array(data[300])
+x3 = x3[x3<700]
+x4 = np.array(data[600])
+x4 = x4[x4<700]
+
+
+
+# # Empiryczna dystrybuanta
+# Nie wydaje mi się żeby coś sensownego z niej wynikało xd ale spoko wygląda
+
+# In[83]:
+
+import numpy as np
+import seaborn as sns
+plt.figure(figsize=(15,10))
+
+X = [x1,x2,x3,x4]
+
+labels = ["50","100","300","600"]
+for x, label in zip(X,labels):
+    sns.distplot(x,
+                 hist_kws=dict(cumulative=True),
+                 kde_kws=dict(cumulative=True),
+                 label=label,
+                 bins=10)
+
+plt.xlabel('F-cja celu')
+plt.ylabel('Znormalizowana częstość')
+plt.legend()
+plt.show()
 
