@@ -39,9 +39,10 @@ class AlgorytmGenetyczny:
         self.population = self.stworz_populacje(self.wielkosc_populacji)
         self.population.extend(self.elite)
 
-        self.best = [0, 10000]  # best result
         self.fitness_history = []  # log of mean population fitness
+        self.best_history = []  # log of lowest loss value
 
+        self.best = None
         # for test sake
         self.vanilla = vanilla
         self.verbose = verbose
@@ -119,6 +120,11 @@ class AlgorytmGenetyczny:
 
     def annihilate_popultaion(self):
         self.population = self.stworz_populacje(self.wielkosc_populacji)
+        self.best_history = []
+        self.fitness_history = []
+        self.best = None
+        self.elite = [self.stworz_indywidual() for e in range(self.elite_num)]
+
 
 
     def selection(self, population):
@@ -253,9 +259,14 @@ class AlgorytmGenetyczny:
 
             # sprawdz czy wygenerowano lepsze rozwiazanie, jak tak to zapamietaj
             best_p = self.best_from_population(self.population)
+            if self.best is None: self.best = copy.deepcopy(best_p)
+
             if best_p[1] < self.best[1]:
                 # zapamietaj najlepsze rozwiazanie
                 self.best = copy.deepcopy(best_p)
+
+            self.best_history.append(self.best[1])
+
 
 
             if verbose:
