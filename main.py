@@ -5,7 +5,6 @@ from functools import reduce
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-
 import timeit
 import time
 
@@ -106,22 +105,13 @@ def main():
     # file.write("Loss: {}\n".format(alg.best[1]))
     # file.close()
 
-
-#
-#
-# print("\n Vanilla:")
-# print("Rozwiazanie: \n {}".format(alg_vanilla.best[0]))
-# print("Suma monet: {}".format(sum(alg_vanilla.best[0])))
-# print("Liczba monet: {}".format(count_not_zero_in_list(alg_vanilla.best[0])))
-# print("Loss: {}".format(alg_vanilla.best[1]))
-
-# poka wykres
-# plt.title('Historia ewolucji')
-# plt.plot(alg.fitness_history, '-o', label='train')
-# plt.xlabel('Iteration')
-# plt.ylabel('Loss')
-#
-# plt.show()
+    # poka wykres
+    # plt.title('Historia ewolucji')
+    # plt.plot(alg.fitness_history, '-o', label='train')
+    # plt.xlabel('Iteration')
+    # plt.ylabel('Loss')
+    #
+    # plt.show()
 
 if __name__ == '__main__':
     main()
