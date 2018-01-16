@@ -53,8 +53,9 @@ class GeneticAlgorythm:
         self.population.extend(self.elite)
         self.fitness_history = []  # log of mean population fitness
         self.best_history = []  # log of lowest loss value
+        self.worst_log =  []
+        self.best_log =  []
 
-        self.worse = None
         self.best = None
         # Na potrzeby testowania
         self.verbose = verbose
@@ -125,9 +126,10 @@ class GeneticAlgorythm:
         """
         self.population = self.create_population(self.population_size)
         self.best_history = []
+        self.best_log = []
+        self.worst_log = []
         self.fitness_history = []
         self.best = None
-        self.worse = None
         self.elite = [self.create_individual() for e in range(self.elite_num)]
 
     def selection(self, population):
@@ -261,13 +263,18 @@ class GeneticAlgorythm:
 
             # sprawdz czy wygenerowano lepsze rozwiazanie, jak tak to zapamietaj
             best_p = self.best_from_population(self.population)
-            if self.best is None: self.best = copy.deepcopy(best_p)
+            worst_p = self.worst_from_population(self.population)
 
+
+            if self.best is None: self.best = copy.deepcopy(best_p)
             if best_p[1] < self.best[1]:
                 # zapamietaj najlepsze rozwiazanie
                 self.best = copy.deepcopy(best_p)
 
             self.best_history.append(self.best[1])
+            self.worst_log.append(worst_p[1])
+            self.best_log.append(best_p[1])
+
 
             if verbose:
                 print("iteracja: {iteration}   average loss:{loss}\n"
@@ -286,15 +293,15 @@ class GeneticAlgorythm:
         best_index = population_loss.index(min(population_loss))
         return (population[best_index], population_loss[best_index])
 
-    def worse_from_population(self, population):
+    def worst_from_population(self, population):
         """
         Funkcja wyszukujaca najgorszego osobnika z populacji.
         :param population: Przeszukiwana populacja.
         :return: Zwraca indeks najgorszego osobnika z populacji i jego wskaznik dopasowania.
         """
         population_loss = [self.fitness(x, self.target) for x in population]
-        best_index = population_loss.index(max(population_loss))
-        return (population[best_index], population_loss[best_index])
+        worst_index = population_loss.index(max(population_loss))
+        return (population[worst_index], population_loss[worst_index])
 
 
 if __name__ == '__main__':
