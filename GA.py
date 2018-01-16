@@ -35,6 +35,7 @@ class GeneticAlgorythm:
         # Przypisanie wartosci zmiennych
         self.target = target
         self.coins = coins
+        self.coins.sort()
         self.population_size = population_size
         self.ind_length = len(self.coins)
         self.leave = leave
@@ -43,6 +44,7 @@ class GeneticAlgorythm:
         self.crossing_method = crossing_method
         self.penalty_param1 = penalty_param1
         self.penalty_param2 = penalty_param2
+
 
         # Tworzenie elity
         self.elite_num = elite_num
@@ -65,7 +67,8 @@ class GeneticAlgorythm:
         :param position: Wybor nominalu z listy.
         :return: Zwraca ilosc sztuk wybranego nominalu.
         """
-        a = math.floor(self.target / self.coins[position])
+        a = math.floor(self.target / self.coins[len(self.coins) - 1] + 5)
+        #a = math.floor(self.target / self.coins[0] + 1)
         if a != 0:
             a = random.randint(0, a)
         return a
@@ -105,7 +108,7 @@ class GeneticAlgorythm:
         # print("Suma " ,suma)
         # print("Liczba monet" ,liczba_monet)
 
-        return self.penalty_param1 * loss ** 2 + self.penalty_param2 * coin_quantity
+        return self.penalty_param1 * loss **2.0 + self.penalty_param2 * coin_quantity
 
     def quality(self, population, target):
         """
@@ -180,7 +183,7 @@ class GeneticAlgorythm:
         """
         # Krzyzowanie rodzicow w celu wytworzenia potomkow
         parents_len = len(mating_pool)
-        desired_len = self.population_size - parents_len
+        desired_len = self.population_size - parents_len - self.elite_num
 
         children = []
         while len(children) < desired_len:
