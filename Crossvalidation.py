@@ -55,7 +55,6 @@ def main():
         'penalty_param2': 1.5
     }
 
-
     target=437
     coins=[1,2,5,10,20,50,100,200,500]
     seed="PSZT0"
@@ -80,9 +79,9 @@ def main():
         import seaborn as sns
 
     # liczba iteracji w pojedyńczym uruchomieniu algorytmu
-    alg_iterations = 10
+    alg_iterations = 750
     # liczba uruchomień algorytmu z różnymi wartościami seed
-    iterations = 2
+    iterations = 10
 
 
 
@@ -138,13 +137,11 @@ def main():
 
     # Pierwszy wykres dla 2 parametrów
     f, axarr = plt.subplots(2, sharex=True)
-
     axarr[0].set_title("{}={}".format(name, parameters[0]))
     axarr[0].plot(worst_log[(par[0],i)], label='najgorszy')
     axarr[0].plot(mean_loss[(par[0], i)], label='średnia')
     axarr[0].plot(best_log[(par[0],i)], label='najlepszy')
     axarr[0].set_ylim(0, 150000000)
-
 
     axarr[1].set_title('{}={}'.format(name, parameters[1]))
     axarr[1].plot(worst_log[(par[1],i)], label='najgorszy')
@@ -161,10 +158,38 @@ def main():
                                                              format=file_ext),
                                                              format=file_ext,
                                                              dpi=1000)
-
     if show_plots:
         plt.show()
 
+
+    # Wykres 1.2
+    par = [parameters[2], parameters[3]]
+    # Pierwszy wykres dla 2 parametrów
+    f, axarr = plt.subplots(2, sharex=True)
+    axarr[0].set_title("{}={}".format(name, parameters[0]))
+    axarr[0].plot(worst_log[(par[0],i)], label='najgorszy')
+    axarr[0].plot(mean_loss[(par[0], i)], label='średnia')
+    axarr[0].plot(best_log[(par[0],i)], label='najlepszy')
+    axarr[0].set_ylim(0, 150000000)
+
+    axarr[1].set_title('{}={}'.format(name, parameters[1]))
+    axarr[1].plot(worst_log[(par[1],i)], label='najgorszy')
+    axarr[1].plot(mean_loss[(par[1], i)], label='średnia')
+    axarr[1].plot(best_log[(par[1],i)], label='najlepszy')
+    axarr[1].set_ylim(0, 150000000)
+
+    plt.xlabel('Iteration')
+    plt.ylabel('Loss')
+    plt.legend(loc=1)
+
+    plt.savefig('./img/{param}_2_{typ}_{seed}.{format}'.format(param=name,typ='bmw',
+                                                             seed=seeds[i],
+                                                             format=file_ext),
+                                                             format=file_ext,
+                                                             dpi=1000)
+
+    if show_plots:
+        plt.show()
 
     # Wykres 2
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col',
@@ -233,4 +258,7 @@ def main():
 
 
 if __name__ == '__main__':
+    start = time.clock()
     main()
+    end = time.clock()
+    print("Time: ", end-start)
