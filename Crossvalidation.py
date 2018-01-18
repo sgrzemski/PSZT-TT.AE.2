@@ -4,9 +4,11 @@ import solver
 import numpy as np
 
 import matplotlib.pyplot as plt
-
 import time
 import random
+
+
+import pickle
 
 def test_algorithm(target, algorythm, iterations=10, verbose=False, coins=None,
                    GA=False):
@@ -79,9 +81,9 @@ def main():
         import seaborn as sns
 
     # liczba iteracji w pojedyńczym uruchomieniu algorytmu
-    alg_iterations = 200
+    alg_iterations = 2
     # liczba uruchomień algorytmu z różnymi wartociami seed
-    iterations = 50
+    iterations = 2
 
 
 
@@ -124,6 +126,12 @@ def main():
             worst_log[(param, i)] = alg.worst_log
             best_log[(param, i)] = alg.best_log
             mean_loss[(param, i)] = alg.fitness_history
+
+            # save alg object for later use
+            pickle.dump(alg, open( "{}_{}_{}.p".format(param_name, param, i),
+                                   "wb" ))
+
+
 
             print("ITERATION {}".format(i))
             print("----------results-------------")
