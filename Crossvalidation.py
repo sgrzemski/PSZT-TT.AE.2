@@ -43,10 +43,10 @@ def main():
     # Metody corssowania:
     # 1: pół na pół; 2: naprzemiennie
     params = {
-        'population_size': 50,
+        'population_size': 100,
         'elite_num': 2,
-        'leave': 0.20,  # próg selekcji progowej
-        'random_leave': 0.1,  # p-nstwo udzialu punktu w dalszej reprodukcji
+        'leave': 0.2,  # próg selekcji progowej
+        'random_leave': 0.05,  # p-nstwo udzialu punktu w dalszej reprodukcji
         'mutation': 0.5,
         'crossing_method': 2
     }
@@ -55,10 +55,10 @@ def main():
         'penalty_param2': 1.5
     }
 
-    target=437
+
     coins=[1,2,5,10,20,50,100,200,500]
     seed="PSZT0"
-
+    target = 1
     alg = GeneticAlgorythm(target, coins, **params, **loss_params, seed=seed,
                             verbose=False)
 
@@ -70,18 +70,18 @@ def main():
     file_ext = 'png'  # typ pliku, do latexa dac 'eps'
     param_name = 'penalty'  # nazwa parametru widoczna na wykresie
 
-    # wartości paremetru do walidacji, zakładane są 4
-    parameters = [50,100,300,600]
+    # wartoci paremetru do walidacji
+    parameters = [1,2,5,10]
 
-    show_plots = False
-    seaborn_available = False  # dodatkowa paczka do wykresów
+    show_plots = True
+    seaborn_available = True  # dodatkowa paczka do wykresów
     if seaborn_available:
         import seaborn as sns
 
     # liczba iteracji w pojedyńczym uruchomieniu algorytmu
-    alg_iterations = 750
-    # liczba uruchomień algorytmu z różnymi wartościami seed
-    iterations = 10
+    alg_iterations = 200
+    # liczba uruchomień algorytmu z różnymi wartociami seed
+    iterations = 50
 
 
 
@@ -101,7 +101,7 @@ def main():
 
         #########################
         # Zmiana parametru
-        alg.penalty_param1 = param
+        alg.penalty_param2 = param
 
         #########################
 
@@ -109,6 +109,8 @@ def main():
         seeds = []
 
         for i in range(iterations):
+            # change target
+            alg.target = random.randint(1, 1000);
             # change seed for random generator
             seeds.append("PSZT{}".format(i))
             GA.random.seed(a="PSZT{}".format(i))
@@ -132,22 +134,22 @@ def main():
             alg.annihilate_popultaion()
 
     # Wykres 1
-    par = [parameters[0], parameters[1]]
     i=0
 
-    # Pierwszy wykres dla 2 parametrów
     f, axarr = plt.subplots(2, sharex=True)
-    axarr[0].set_title("{}={}".format(name, parameters[0]))
-    axarr[0].plot(worst_log[(par[0],i)], label='najgorszy')
-    axarr[0].plot(mean_loss[(par[0], i)], label='średnia')
-    axarr[0].plot(best_log[(par[0],i)], label='najlepszy')
-    axarr[0].set_ylim(0, 150000000)
+    axarr[0].set_title("Najlepsze osobniki w populacji")
 
-    axarr[1].set_title('{}={}'.format(name, parameters[1]))
-    axarr[1].plot(worst_log[(par[1],i)], label='najgorszy')
-    axarr[1].plot(mean_loss[(par[1], i)], label='średnia')
-    axarr[1].plot(best_log[(par[1],i)], label='najlepszy')
-    axarr[1].set_ylim(0, 150000000)
+    for x in range(len(parameters)):
+        axarr[0].plot(best_log[(parameters[x],i)], label=parameters[x])
+    axarr[0].set_ylim(0, 500)
+    axarr[1].set_title("Średnia populacji")
+
+    ymax = 0;
+    for x in range(len(parameters)):
+        if ymax < max(mean_loss[(parameters[x],i)]):
+            ymax = max(mean_loss[(parameters[x],i)])
+        axarr[1].plot(mean_loss[(parameters[x],i)], label=parameters[x])
+    axarr[1].set_ylim(0, ymax/2)
 
     plt.xlabel('Iteration')
     plt.ylabel('Loss')
@@ -162,35 +164,6 @@ def main():
         plt.show()
 
 
-    # Wykres 1.2
-    par = [parameters[2], parameters[3]]
-    # Pierwszy wykres dla 2 parametrów
-    f, axarr = plt.subplots(2, sharex=True)
-    axarr[0].set_title("{}={}".format(name, parameters[0]))
-    axarr[0].plot(worst_log[(par[0],i)], label='najgorszy')
-    axarr[0].plot(mean_loss[(par[0], i)], label='średnia')
-    axarr[0].plot(best_log[(par[0],i)], label='najlepszy')
-    axarr[0].set_ylim(0, 150000000)
-
-    axarr[1].set_title('{}={}'.format(name, parameters[1]))
-    axarr[1].plot(worst_log[(par[1],i)], label='najgorszy')
-    axarr[1].plot(mean_loss[(par[1], i)], label='średnia')
-    axarr[1].plot(best_log[(par[1],i)], label='najlepszy')
-    axarr[1].set_ylim(0, 150000000)
-
-    plt.xlabel('Iteration')
-    plt.ylabel('Loss')
-    plt.legend(loc=1)
-
-    plt.savefig('./img/{param}_2_{typ}_{seed}.{format}'.format(param=name,typ='bmw',
-                                                             seed=seeds[i],
-                                                             format=file_ext),
-                                                             format=file_ext,
-                                                             dpi=1000)
-
-    if show_plots:
-        plt.show()
-
     # Wykres 2
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, sharex='col',
                                                sharey='row',figsize=(15,10))
@@ -199,14 +172,14 @@ def main():
     ax2.set_title('{}={}'.format(param_name, parameters[1]))
     ax3.set_title('{}={}'.format(param_name, parameters[2]))
     ax4.set_title('{}={}'.format(param_name, parameters[3]))
-    ax1.set_ylim([0, 4000])
-    ax2.set_ylim([0, 4000])
-    ax3.set_ylim([0, 4000])
-    ax4.set_ylim([0, 4000])
+    ax1.set_ylim([0, 300])
+    ax2.set_ylim([0, 300])
+    ax3.set_ylim([0, 300])
+    ax4.set_ylim([0, 300])
 
     for i in range(iterations):
-        ax1.plot(best_history[(parameters[2],i)])
-        ax2.plot(best_history[(parameters[3],i)])
+        ax1.plot(best_history[(parameters[0],i)])
+        ax2.plot(best_history[(parameters[1],i)])
         ax3.plot(best_history[(parameters[2],i)])
         ax4.plot(best_history[(parameters[3],i)])
 
@@ -238,11 +211,11 @@ def main():
 
 
         for x, label in zip(X,labels):
-            sns.distplot(x, hist=False, rug=True,
+            sns.distplot(x, hist=True, rug=True,
                         hist_kws=dict(cumulative=True),
                         kde_kws=dict(cumulative=True),
                         label=label,
-                        bins=10)
+                        bins=50)
 
         plt.xlabel('F-cja celu')
         plt.ylabel('Znormalizowana częstość')
